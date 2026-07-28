@@ -609,8 +609,8 @@ function extractVideoData(renderer) {
     const title = renderer.title?.runs?.[0]?.text || renderer.title?.simpleText || '';
     const thumbnail = renderer.thumbnail?.thumbnails?.[0]?.url || '';
     
-    // Extracted actual channel avatar picture URL
-    const channelAvatar = renderer.channelThumbnail?.thumbnails?.[0]?.url || '';
+    // Extracted actual channel avatar picture URL (supporting both desktop and mobile schemas)
+    const channelAvatar = renderer.channelThumbnailSupportedRenderers?.channelThumbnailWithLinkRenderer?.thumbnail?.thumbnails?.[0]?.url || renderer.channelThumbnail?.thumbnails?.[0]?.url || '';
     
     const channelName = renderer.longBylineText?.runs?.[0]?.text || renderer.longBylineText?.simpleText || '';
     const publishedTime = renderer.publishedTimeText?.simpleText || '';
