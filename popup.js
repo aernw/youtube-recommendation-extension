@@ -81,6 +81,16 @@ const defaultKeywords = {
     'post rock', 'studying playlist', 'lofi hip hop', 'deep focus sounds', 'classical music study',
     // French
     'musique lofi', 'musique pour étudier', 'ambiance détente', 'piano relaxant'
+  ],
+  travel: [
+    'travel vlog', 'solo travel', 'backpacking guide', 'travel documentary', 'budget travel tips', 
+    'wanderlust', 'adventure travel', 'explore cities', 'food travel', 'street food vlog', 
+    'nomadic life', 'van life vlog', 'travel diary', 'destinations review', 'world tour vlog', 
+    'living abroad', 'expat life', 'hiking adventure', 'road trip vlog', 'japan travel vlog', 
+    'europe travel guide', 'asia backpacking',
+    // French
+    'vlog voyage', 'tour du monde', 'voyager seul', 'road trip fr', 'blog voyage', 
+    'découverte pays', 'expedition'
   ]
 };
 
@@ -121,6 +131,10 @@ const modeDetails = {
   music: {
     title: "🎵 Music & Chill Feed Active",
     desc: "Feeds your homepage with chill instrumentals, lo-fi beats, ambient sounds, and study playlists."
+  },
+  travel: {
+    title: "✈️ Travel & Vlogs Feed Active",
+    desc: "Feeds your homepage with travel vlogs, backpacking guides, world tours, food explorations, and travel diaries."
   }
 };
 

@@ -88,6 +88,16 @@ const defaultKeywords = {
     'post rock', 'studying playlist', 'lofi hip hop', 'deep focus sounds', 'classical music study',
     // French
     'musique lofi', 'musique pour étudier', 'ambiance détente', 'piano relaxant'
+  ],
+  travel: [
+    'travel vlog', 'solo travel', 'backpacking guide', 'travel documentary', 'budget travel tips', 
+    'wanderlust', 'adventure travel', 'explore cities', 'food travel', 'street food vlog', 
+    'nomadic life', 'van life vlog', 'travel diary', 'destinations review', 'world tour vlog', 
+    'living abroad', 'expat life', 'hiking adventure', 'road trip vlog', 'japan travel vlog', 
+    'europe travel guide', 'asia backpacking',
+    // French
+    'vlog voyage', 'tour du monde', 'voyager seul', 'road trip fr', 'blog voyage', 
+    'découverte pays', 'expedition'
   ]
 };
 
@@ -614,6 +624,20 @@ function getTargetedQuery(keyword) {
     return `${keyword} ${modifier}`;
   }
   
+  if (activeMode === 'travel') {
+    const searchModifiers = [
+      'vlog travel adventure',
+      'backpacking guide tips',
+      'documentary food explore',
+      'road trip destination diary'
+    ];
+    if (kw.includes('travel') || kw.includes('vlog') || kw.includes('voyage') || kw.includes('guide')) {
+      return keyword;
+    }
+    const modifier = searchModifiers[Math.floor(Math.random() * searchModifiers.length)];
+    return `${keyword} ${modifier}`;
+  }
+  
   return keyword;
 }
 
@@ -1101,6 +1125,7 @@ function injectToggleHeader() {
       <option value="business" ${activeMode === 'business' ? 'selected' : ''}>💼 Business & SaaS</option>
       <option value="science" ${activeMode === 'science' ? 'selected' : ''}>🔬 Science & Learn</option>
       <option value="music" ${activeMode === 'music' ? 'selected' : ''}>🎵 Music & Chill</option>
+      <option value="travel" ${activeMode === 'travel' ? 'selected' : ''}>✈️ Travel & Vlogs</option>
     </select>
   `;
   
