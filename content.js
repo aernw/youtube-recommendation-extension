@@ -1,30 +1,62 @@
-// YouTube Programming Feed Filter & Recommendation Injector Content Script
+// YouTube Multi-Mode Filter & Recommendation Injector Content Script
 
-let filterEnabled = false;
+let activeMode = 'normal';
 let whitelistKeywords = [];
 let totalFilteredCount = 0;
 let autoScrollTimer = null;
 let isScrolling = false;
 let currentPath = window.location.pathname;
 
-// Default programming keywords
-const defaultKeywords = [
-  'javascript', 'js', 'typescript', 'ts', 'python', 'py', 'rust', 'golang', 'go lang', 
-  'cpp', 'c++', 'c#', 'dotnet', 'java ', 'kotlin', 'swift', 'php', 'ruby', 'html', 
-  'css', 'sass', 'sql', 'nosql', 'mongodb', 'postgres', 'mysql', 'docker', 'kubernetes', 
-  'k8s', 'aws', 'gcp', 'azure', 'devops', 'git ', 'github', 'programming', 'coding', 
-  'programmer', 'coder', 'developer', 'software engineer', 'computer science', 'algorithm', 
-  'data structures', 'machine learning', 'deep learning', 'neural network', 'artificial intelligence', 
-  ' ai ', 'web dev', 'frontend', 'backend', 'fullstack', 'compiler', 'interpreter', 'react', 
-  'vue', 'angular', 'svelte', 'nextjs', 'nuxtjs', 'node.js', 'nodejs', 'expressjs', 
-  'django', 'flask', 'fastapi', 'spring boot', 'linux', 'bash', 'terminal', 'cmd', 
-  'vs code', 'vscode', 'neovim', 'vim', 'emacs', 'refactoring', 'clean code', 
-  'design patterns', 'leetcoding', 'leetcode', 'hackerrank', 'codeforces', 'competitive programming', 
-  'tech interview', 'system design', 'microservices', 'rest api', 'graphql', 'grpc', 
-  'webassembly', 'wasm', 'flexbox', 'tailwind', 'bootstrap',
-  // French translations & terms
-  'programmation', 'développeur', 'developpeur', 'informatique', 'codeur', 'tutoriel', 'tuto'
-];
+// Default keyword lists for all focus modes
+const defaultKeywords = {
+  programming: [
+    'javascript', 'js', 'typescript', 'ts', 'python', 'py', 'rust', 'golang', 'go lang', 
+    'cpp', 'c++', 'c#', 'dotnet', 'java ', 'kotlin', 'swift', 'php', 'ruby', 'html', 
+    'css', 'sass', 'sql', 'nosql', 'mongodb', 'postgres', 'mysql', 'docker', 'kubernetes', 
+    'k8s', 'aws', 'gcp', 'azure', 'devops', 'git ', 'github', 'programming', 'coding', 
+    'programmer', 'coder', 'developer', 'software engineer', 'computer science', 'algorithm', 
+    'data structures', 'machine learning', 'deep learning', 'neural network', 'artificial intelligence', 
+    ' ai ', 'web dev', 'frontend', 'backend', 'fullstack', 'compiler', 'interpreter', 'react', 
+    'vue', 'angular', 'svelte', 'nextjs', 'nuxtjs', 'node.js', 'nodejs', 'expressjs', 
+    'django', 'flask', 'fastapi', 'spring boot', 'linux', 'bash', 'terminal', 'cmd', 
+    'vs code', 'vscode', 'neovim', 'vim', 'emacs', 'refactoring', 'clean code', 
+    'design patterns', 'leetcoding', 'leetcode', 'hackerrank', 'codeforces', 'competitive programming', 
+    'tech interview', 'system design', 'microservices', 'rest api', 'graphql', 'grpc', 
+    'webassembly', 'wasm', 'flexbox', 'tailwind', 'bootstrap',
+    // French translations & terms
+    'programmation', 'développeur', 'developpeur', 'informatique', 'codeur', 'tutoriel', 'tuto'
+  ],
+  productivity: [
+    'productivity', 'time management', 'focus', 'deep work', 'life advice', 'habits', 'morning routine', 
+    'self improvement', 'discipline', 'organization', 'study methods', 'pomodoro', 'workflow setup', 
+    'notion setup', 'planning', 'goals', 'burnout', 'motivation', 'thomas frank', 'ali abdaal', 
+    'huberman', 'cal newport', 'james clear', 'reading', 'books summary', 'mindset', 'efficiency', 
+    'journaling', 'finance tips', 'wealth building', 'stoicism',
+    // French
+    'productivité', 'organisation', 'habitudes', 'routines', 'discipline', 'concentration', 
+    'motivation', 'conseils de vie', 'developpement personnel', 'apprendre', 'efficacité', 
+    'méthode de travail', 'finance personnelle'
+  ],
+  tech: [
+    'tech news', 'new technology', 'cool apps', 'software review', 'gadgets', 'smart home', 
+    'future tech', 'ai tools', 'chatgpt', 'midjourney', 'apple vision', 'iphone review', 
+    'smartphone', 'linus tech tips', 'marques brownlee', 'mkbhd', 'unbox therapy', 
+    'hardware review', 'computex', 'ces 2026', 'graphics card', 'latest gadgets', 'apple event', 
+    'tech comparison', 'wearables', 'augmented reality', 'quantum computing',
+    // French
+    'technologie', 'nouvelles technologies', 'test high tech', 'domotique', 'objets connectés', 
+    'gadget intelligent', 'actu tech', 'intelligence artificielle'
+  ],
+  gaming: [
+    'gameplay', 'gaming', 'esports', 'game review', 'playthrough', 'walkthrough game', 
+    'twitch highlight', 'speedrun', 'nintendo', 'playstation', 'xbox', 'steam deck', 
+    'pc gaming', 'retro gaming', 'minecraft', 'zelda', 'elden ring', 'gta', 'cyberpunk', 
+    'assassins creed', 'resident evil', 'halo', 'fortnite', 'league of legends', 'valorant',
+    // French
+    'jeux vidéo', 'jeu video', 'gameplay fr', 'découverte jeu', 'let\'s play', 'lets play', 
+    'squeezie gaming', 'gotaga', 'kameto', 'joueur du grenier'
+  ]
+};
 
 // Console debug log helper
 function logDebug(message, isAllowed) {
@@ -33,36 +65,48 @@ function logDebug(message, isAllowed) {
 }
 
 // Initialize settings from storage
-chrome.storage.local.get(['filterEnabled', 'keywords', 'totalFilteredCount'], (result) => {
-  filterEnabled = result.filterEnabled !== undefined ? result.filterEnabled : false;
-  whitelistKeywords = result.keywords || defaultKeywords;
+chrome.storage.local.get(['activeMode', 'totalFilteredCount'], (result) => {
+  activeMode = result.activeMode || 'normal';
   totalFilteredCount = result.totalFilteredCount || 0;
   
-  injectStyles();
-  injectToggleHeader();
-  
-  if (filterEnabled) {
-    handleRouteChange();
-  }
+  const storageKey = `keywords_${activeMode}`;
+  chrome.storage.local.get([storageKey], (res) => {
+    whitelistKeywords = res[storageKey] || defaultKeywords[activeMode] || [];
+    
+    injectStyles();
+    injectToggleHeader();
+    
+    if (activeMode !== 'normal') {
+      handleRouteChange();
+    }
+  });
 });
 
 // Listen for updates from popup or other parts of the extension
 chrome.storage.onChanged.addListener((changes) => {
-  if (changes.filterEnabled !== undefined) {
-    filterEnabled = changes.filterEnabled.newValue;
-    if (filterEnabled) {
-      handleRouteChange();
-    } else {
-      disableFilter();
-      teardownHomepageGrid();
-    }
-    updateHeaderToggleUI();
+  if (changes.activeMode !== undefined) {
+    activeMode = changes.activeMode.newValue;
+    
+    const storageKey = `keywords_${activeMode}`;
+    chrome.storage.local.get([storageKey], (res) => {
+      whitelistKeywords = res[storageKey] || defaultKeywords[activeMode] || [];
+      
+      if (activeMode !== 'normal') {
+        handleRouteChange();
+      } else {
+        disableFilter();
+        teardownHomepageGrid();
+      }
+      updateHeaderToggleUI();
+    });
   }
-  if (changes.keywords !== undefined) {
-    whitelistKeywords = changes.keywords.newValue;
-    if (filterEnabled) {
+  
+  // Listen for changes in keywords for the current active mode
+  const currentStorageKey = `keywords_${activeMode}`;
+  if (changes[currentStorageKey] !== undefined) {
+    whitelistKeywords = changes[currentStorageKey].newValue;
+    if (activeMode !== 'normal') {
       if (window.location.pathname === '/') {
-        // Re-initialize homepage recommendations with new keywords
         setupHomepageGrid(true);
       } else {
         resetFilteredAttributes();
@@ -86,13 +130,13 @@ const SHELF_SELECTORS = [
   'ytd-reel-shelf-renderer'      // Shorts shelves in other feeds
 ];
 
-// Injected styling for custom programming recommendation feed and toggle switch
+// Injected styling for custom recommendation feed and mode-select dropdown
 function injectStyles() {
   if (document.getElementById('devstream-injected-styles')) return;
   const style = document.createElement('style');
   style.id = 'devstream-injected-styles';
   style.textContent = `
-    /* Toggle switch header styles - Explicitly sized to prevent stretching YouTube Header */
+    /* Toggle select dropdown styling in YouTube Header */
     #yt-programming-filter-toggle-container {
       display: flex;
       align-items: center;
@@ -100,56 +144,29 @@ function injectStyles() {
       height: 40px;            /* Fix: Match YouTube's default button heights */
       align-self: center;      /* Fix: Vertically align in header without stretching it */
       font-family: Roboto, Arial, sans-serif;
-      font-size: 14px;
-      color: var(--yt-spec-text-primary, #fff);
       user-select: none;
     }
-    .yt-prog-label {
-      margin-right: 8px;
+    #yt-devstream-mode-select {
+      background-color: var(--yt-spec-badge-chip-background, #2c2c2c);
+      color: var(--yt-spec-text-primary, #fff);
+      border: 1px solid var(--yt-spec-10-percent-layer, rgba(255,255,255,0.1));
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-family: Roboto, Arial, sans-serif;
+      font-size: 13px;
       font-weight: 500;
-      letter-spacing: 0.1px;
-      white-space: nowrap;
       cursor: pointer;
+      outline: none;
+      transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
     }
-    .yt-prog-switch {
-      position: relative;
-      display: inline-block;
-      width: 36px;
-      height: 20px;
+    #yt-devstream-mode-select:hover {
+      background-color: var(--yt-spec-button-chip-background-hover, #3e3e3e);
+      border-color: #00c6ff;
+      box-shadow: 0 0 6px rgba(0, 198, 255, 0.3);
     }
-    .yt-prog-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    .yt-prog-slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: var(--yt-spec-badge-chip-background, #aaa);
-      transition: .3s;
-      border-radius: 20px;
-    }
-    .yt-prog-slider:before {
-      position: absolute;
-      content: "";
-      height: 14px;
-      width: 14px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: .3s;
-      border-radius: 50%;
-    }
-    input:checked + .yt-prog-slider {
-      background: linear-gradient(90deg, #00c6ff, #0072ff);
-      box-shadow: 0 0 8px rgba(0, 198, 255, 0.4);
-    }
-    input:checked + .yt-prog-slider:before {
-      transform: translateX(16px);
+    #yt-devstream-mode-select option {
+      background-color: #1f1f1f;
+      color: #fff;
     }
 
     /* Custom Recommendation Grid styles */
@@ -305,16 +322,14 @@ function injectStyles() {
 }
 
 // -------------------------------------------------------------
-// REDESIGNED HOMEPAGE INJECTION FLOW
+// HOMEPAGE INJECTION FLOW
 // -------------------------------------------------------------
 
 // Routing controller for Single Page Application navigation
 function handleRouteChange() {
-  if (!filterEnabled) return;
-  
   const isHomepage = window.location.pathname === '/';
   
-  if (isHomepage) {
+  if (isHomepage && activeMode !== 'normal') {
     setupHomepageGrid();
   } else {
     teardownHomepageGrid();
@@ -329,20 +344,16 @@ let currentOffset = 0;
 async function setupHomepageGrid(forceRefresh = false) {
   const originalGrid = document.querySelector('ytd-rich-grid-renderer');
   if (!originalGrid) {
-    // Retry in 200ms if home feed hasn't rendered in DOM yet
     setTimeout(() => setupHomepageGrid(forceRefresh), 200);
     return;
   }
   
-  // Hide original grid
   originalGrid.style.display = 'none';
   
-  // Locate or create custom grid container
   let customGrid = document.getElementById('devstream-feed-grid');
   if (!customGrid) {
     customGrid = document.createElement('div');
     customGrid.id = 'devstream-feed-grid';
-    // Insert right after the hidden original grid
     originalGrid.parentNode.insertBefore(customGrid, originalGrid.nextSibling);
   }
   
@@ -352,7 +363,6 @@ async function setupHomepageGrid(forceRefresh = false) {
     await loadInitialRecommendations();
   }
   
-  // Attach Infinite Scroll listener
   if (!scrollListenerAttached) {
     window.addEventListener('scroll', handleInfiniteScroll);
     scrollListenerAttached = true;
@@ -386,16 +396,13 @@ async function loadInitialRecommendations() {
   const promises = keywordsToFetch.map(kw => fetchVideosForKeyword(kw));
   const results = await Promise.all(promises);
   
-  // Flatten and filter duplicates
   let videos = results.flat().filter(v => v !== null);
-  
-  // Score and sort by engagement/recency rather than random shuffling
   videos = scoreAndRankVideos(videos);
   
   hideLoadingSpinner();
   
   if (videos.length === 0) {
-    showEmptyMessage("Could not fetch programming content. Please check your internet connection.");
+    showEmptyMessage("Could not fetch recommendation content. Please check your internet connection.");
     return;
   }
   
@@ -410,14 +417,13 @@ async function loadMoreRecommendations() {
   const customGrid = document.getElementById('devstream-feed-grid');
   if (!customGrid) return;
   
-  // Render smaller inline spinner at the bottom
   const bottomSpinner = document.createElement('div');
   bottomSpinner.className = 'dev-spinner';
   bottomSpinner.style.padding = '30px 0';
   bottomSpinner.innerHTML = `<div class="dev-spinner-circle"></div>`;
   customGrid.appendChild(bottomSpinner);
   
-  // Select another 4 random keywords to fetch next batch
+  // Select another 4 keywords to fetch next batch
   const keywordsToFetch = getKeywordsToFetch(4);
   const promises = keywordsToFetch.map(kw => fetchVideosForKeyword(kw));
   const results = await Promise.all(promises);
@@ -436,46 +442,87 @@ async function loadMoreRecommendations() {
 
 // Infinite scroll trigger
 function handleInfiniteScroll() {
-  if (!filterEnabled || isScrolling) return;
+  if (activeMode === 'normal' || isScrolling) return;
   
   const customGrid = document.getElementById('devstream-feed-grid');
   if (!customGrid) return;
   
   const rect = customGrid.getBoundingClientRect();
-  // Fetch more when user is near bottom of feed container (1.5x window height remaining)
   if (rect.bottom < window.innerHeight * 1.5) {
     loadMoreRecommendations();
   }
 }
 
-// Formulate queries that steer away from massive "courses" and focus on tips, workflows, tools, and trends
+// Formulate search queries based on the active stream mode
 function getTargetedQuery(keyword) {
   const kw = keyword.toLowerCase().trim();
   
-  // Custom modifiers that pull highly practical daily dev content
-  const searchModifiers = [
-    'tips and tricks workflow',
-    'best practices architecture',
-    'new features trends',
-    'tools setup productivity',
-    'real world application project',
-    'comparison review recommendation'
-  ];
-  
-  // If keyword already contains structural terms, keep it
-  if (kw.includes('tips') || kw.includes('practices') || kw.includes('new') || kw.includes('tools') || kw.includes('setup') || kw.includes('workflow')) {
-    return keyword;
+  if (activeMode === 'programming') {
+    const searchModifiers = [
+      'tips and tricks workflow',
+      'best practices architecture',
+      'new features trends',
+      'tools setup productivity',
+      'real world application project',
+      'comparison review recommendation'
+    ];
+    if (kw.includes('tips') || kw.includes('practices') || kw.includes('new') || kw.includes('tools') || kw.includes('setup') || kw.includes('workflow')) {
+      return keyword;
+    }
+    const modifier = searchModifiers[Math.floor(Math.random() * searchModifiers.length)];
+    return `${keyword} ${modifier}`;
   }
   
-  const modifier = searchModifiers[Math.floor(Math.random() * searchModifiers.length)];
-  return `${keyword} ${modifier}`;
+  if (activeMode === 'productivity') {
+    const searchModifiers = [
+      'systems workflow',
+      'habits methods routines',
+      'tips guides productivity',
+      'deep work planning setup'
+    ];
+    if (kw.includes('productivity') || kw.includes('habits') || kw.includes('workflow') || kw.includes('focus')) {
+      return keyword;
+    }
+    const modifier = searchModifiers[Math.floor(Math.random() * searchModifiers.length)];
+    return `${keyword} ${modifier}`;
+  }
+  
+  if (activeMode === 'tech') {
+    const searchModifiers = [
+      'review hands on test',
+      'unbox review smart',
+      'latest features review',
+      'tech news future gadgets'
+    ];
+    if (kw.includes('review') || kw.includes('tech') || kw.includes('news') || kw.includes('gadgets')) {
+      return keyword;
+    }
+    const modifier = searchModifiers[Math.floor(Math.random() * searchModifiers.length)];
+    return `${keyword} ${modifier}`;
+  }
+  
+  if (activeMode === 'gaming') {
+    const searchModifiers = [
+      'gameplay review test',
+      'playthrough walkthrough highlights',
+      'game review analysis',
+      'lets play walkthrough'
+    ];
+    if (kw.includes('gameplay') || kw.includes('review') || kw.includes('playthrough')) {
+      return keyword;
+    }
+    const modifier = searchModifiers[Math.floor(Math.random() * searchModifiers.length)];
+    return `${keyword} ${modifier}`;
+  }
+  
+  return keyword;
 }
 
 // Fetch search results and parse elements in background
 async function fetchVideosForKeyword(keyword) {
   const query = getTargetedQuery(keyword);
   try {
-    logDebug(`Fetching fresh recommendations for: "${query}"...`, true);
+    logDebug(`Fetching fresh recommendations for [${activeMode}]: "${query}"...`, true);
     const response = await fetch(`/results?search_query=${encodeURIComponent(query)}`);
     const html = await response.text();
     
@@ -629,7 +676,6 @@ function renderVideoCards(videos) {
       </div>
     `;
     
-    // Support SPA navigation inside YouTube framework
     card.addEventListener('click', (e) => {
       e.preventDefault();
       window.location.href = `/watch?v=${v.videoId}`;
@@ -643,9 +689,9 @@ function renderVideoCards(videos) {
 function getKeywordsToFetch(count) {
   let list = [...whitelistKeywords];
   if (list.length < count) {
-    // Supplement with random default keywords
     const diff = count - list.length;
-    const availableDefaults = defaultKeywords.filter(k => !list.includes(k));
+    const modeDefaults = defaultKeywords[activeMode] || [];
+    const availableDefaults = modeDefaults.filter(k => !list.includes(k));
     const extra = [];
     const temp = [...availableDefaults];
     for (let i = 0; i < Math.min(diff, availableDefaults.length); i++) {
@@ -655,7 +701,6 @@ function getKeywordsToFetch(count) {
     list = [...list, ...extra];
   }
   
-  // Now pick 'count' keywords randomly from this list
   const selected = [];
   const temp = [...list];
   for (let i = 0; i < Math.min(count, list.length); i++) {
@@ -683,7 +728,7 @@ function scoreAndRankVideos(videos) {
 
 // Parse views string (e.g. "1,2 M de vues" or "150 k vues") to integer
 function parseViewsCount(viewStr) {
-  if (!viewStr) return 1000; // Small default for videos with no views string
+  if (!viewStr) return 1000;
   
   const clean = viewStr.toLowerCase().replace(/[^0-9kMmb\. ,]/g, '').trim();
   let num = parseFloat(clean.replace(/,/g, '.').replace(/ /g, ''));
@@ -725,7 +770,7 @@ function calculateRecencyMultiplier(timeStr) {
     const match = str.match(/(\d+)/);
     if (match) {
       const years = parseInt(match[1]);
-      if (years >= 5) return 0.01;  // Legacy, probably deprecated tech
+      if (years >= 5) return 0.01;
       if (years >= 3) return 0.05;
       if (years >= 2) return 0.15;
       return 0.35; // 1 year ago
@@ -746,18 +791,16 @@ function showLoadingSpinner() {
   spinner.className = 'dev-spinner';
   spinner.innerHTML = `
     <div class="dev-spinner-circle"></div>
-    <span class="dev-spinner-text">Personalizing your developer feed...</span>
+    <span class="dev-spinner-text">Personalizing your ${activeMode} feed...</span>
   `;
   grid.appendChild(spinner);
 }
 
-// Hide loading state
 function hideLoadingSpinner() {
   const spinner = document.getElementById('devstream-spinner');
   if (spinner) spinner.remove();
 }
 
-// Display empty feedback
 function showEmptyMessage(msgText) {
   const grid = document.getElementById('devstream-feed-grid');
   if (!grid) return;
@@ -772,18 +815,36 @@ function showEmptyMessage(msgText) {
 // STANDARD FEED FILTERING FLOW (USED ON WATCH / SEARCH RESULTS PAGES)
 // -------------------------------------------------------------
 
+// Check if a text contains any of our active mode keywords
+function matchesKeywords(text, keywords) {
+  if (!text) return false;
+  const lowerText = text.toLowerCase();
+  
+  return keywords.some(keyword => {
+    const lowerKeyword = keyword.toLowerCase().trim();
+    if (!lowerKeyword) return false;
+    
+    if (lowerKeyword.length <= 3) {
+      let escapedKeyword = lowerKeyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      let pattern = `\\b${escapedKeyword}\\b`;
+      if (lowerKeyword.includes('+') || lowerKeyword.includes('#')) {
+        pattern = `(?:^|\\s|[\\.,!\\?\\(\\)\\[\\]{}\\-])${escapedKeyword}(?:$|\\s|[\\.,!\\?\\(\\)\\[\\]{}\\-])`;
+      }
+      const regex = new RegExp(pattern);
+      return regex.test(lowerText);
+    }
+    
+    return lowerText.includes(lowerKeyword);
+  });
+}
+
 // Function to filter a single video item using innerText to penetrate Shadow DOM
 function filterVideoItem(item) {
-  if (!filterEnabled) return;
-  if (item.getAttribute('data-filtered') !== null) return; // Already processed
+  if (activeMode === 'normal') return;
+  if (item.getAttribute('data-filtered') !== null) return;
   
-  // innerText fetches all visible text, successfully penetrating any Shadow DOM boundaries
   const cardText = (item.innerText || item.textContent || '').trim();
-  
-  // If the card text is very short or empty, it's still loading (skeleton state). Skip for now.
-  if (cardText.length < 10) {
-    return;
-  }
+  if (cardText.length < 10) return;
   
   const isMatch = matchesKeywords(cardText, whitelistKeywords);
   const displaySnippet = cardText.replace(/\s+/g, ' ').substring(0, 60);
@@ -797,7 +858,6 @@ function filterVideoItem(item) {
     item.style.display = 'none';
     logDebug(`BLOCKED WATCH RECOMMENDATION: "${displaySnippet}..."`, false);
     
-    // Increment filtered count
     totalFilteredCount++;
     chrome.storage.local.set({ totalFilteredCount });
   }
@@ -805,17 +865,12 @@ function filterVideoItem(item) {
 
 // Filter shelves (like Shorts)
 function filterShelfItem(shelf) {
-  if (!filterEnabled) return;
+  if (activeMode === 'normal') return;
   if (shelf.getAttribute('data-filtered') !== null) return;
   
   const shelfText = (shelf.innerText || shelf.textContent || '').toLowerCase();
+  if (shelfText.length < 10) return;
   
-  // If the shelf content is not loaded yet, wait
-  if (shelfText.length < 10) {
-    return;
-  }
-  
-  // If it's a Shorts or news shelf, hide it
   if (shelfText.includes('shorts') || shelfText.includes('actualités') || shelfText.includes('breaking news') || shelf.querySelector('ytd-reel-shelf-renderer')) {
     shelf.setAttribute('data-filtered', 'blocked');
     shelf.style.display = 'none';
@@ -826,16 +881,12 @@ function filterShelfItem(shelf) {
 
 // Scans the DOM and applies the filter to all video cards
 function applyFilter() {
-  if (!filterEnabled) return;
-  
-  // Skip homepage grid since it uses custom recommendation injection
+  if (activeMode === 'normal') return;
   if (window.location.pathname === '/') return;
   
-  // Filter video cards
   const videoElements = document.querySelectorAll(VIDEO_SELECTORS.join(','));
   videoElements.forEach(filterVideoItem);
   
-  // Filter shelves
   const shelfElements = document.querySelectorAll(SHELF_SELECTORS.join(','));
   shelfElements.forEach(filterShelfItem);
 }
@@ -869,16 +920,14 @@ function resetFilteredAttributes() {
 
 // MutationObserver tracks route changes & dynamically loaded elements
 const observer = new MutationObserver(() => {
-  // Check if SPA path URL changed
   if (window.location.pathname !== currentPath) {
     currentPath = window.location.pathname;
     handleRouteChange();
     return;
   }
   
-  if (!filterEnabled) return;
+  if (activeMode === 'normal') return;
   
-  // Apply standard filters on watch/results pages
   if (window.location.pathname !== '/') {
     applyFilter();
   }
@@ -898,12 +947,12 @@ setInterval(() => {
     return;
   }
   
-  if (filterEnabled && window.location.pathname !== '/') {
+  if (activeMode !== 'normal' && window.location.pathname !== '/') {
     applyFilter();
   }
 }, 1000);
 
-// Inject sleek "Programming Mode" Toggle switch in YouTube's top masthead
+// Inject sleek select dropdown in YouTube's top masthead
 function injectToggleHeader() {
   if (document.getElementById('yt-programming-filter-toggle-container')) return;
   
@@ -917,25 +966,27 @@ function injectToggleHeader() {
   toggleContainer.id = 'yt-programming-filter-toggle-container';
   
   toggleContainer.innerHTML = `
-    <span class="yt-prog-label" title="Filters feed to only show programming videos">Dev Mode</span>
-    <label class="yt-prog-switch">
-      <input type="checkbox" id="yt-programming-filter-checkbox" ${filterEnabled ? 'checked' : ''}>
-      <span class="yt-prog-slider"></span>
-    </label>
+    <select id="yt-devstream-mode-select">
+      <option value="normal" ${activeMode === 'normal' ? 'selected' : ''}>Standard Feed</option>
+      <option value="programming" ${activeMode === 'programming' ? 'selected' : ''}>👨‍💻 Programming</option>
+      <option value="productivity" ${activeMode === 'productivity' ? 'selected' : ''}>🎯 Productivity</option>
+      <option value="tech" ${activeMode === 'tech' ? 'selected' : ''}>⚡ Tech & Apps</option>
+      <option value="gaming" ${activeMode === 'gaming' ? 'selected' : ''}>🎮 Gaming Feed</option>
+    </select>
   `;
   
   targetHeader.insertBefore(toggleContainer, targetHeader.firstChild);
   
-  const checkbox = document.getElementById('yt-programming-filter-checkbox');
-  checkbox.addEventListener('change', (e) => {
-    const isChecked = e.target.checked;
-    chrome.storage.local.set({ filterEnabled: isChecked });
+  const select = document.getElementById('yt-devstream-mode-select');
+  select.addEventListener('change', (e) => {
+    const mode = e.target.value;
+    chrome.storage.local.set({ activeMode: mode });
   });
 }
 
 function updateHeaderToggleUI() {
-  const checkbox = document.getElementById('yt-programming-filter-checkbox');
-  if (checkbox) {
-    checkbox.checked = filterEnabled;
+  const select = document.getElementById('yt-devstream-mode-select');
+  if (select) {
+    select.value = activeMode;
   }
 }

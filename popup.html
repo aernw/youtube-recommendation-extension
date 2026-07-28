@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YouTube DevFilter Control Panel</title>
+  <title>YouTube DevStream Focus Control Panel</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
             </linearGradient>
           </defs>
         </svg>
-        <span class="logo-text">DevStream <span class="logo-highlight">Filter</span></span>
+        <span class="logo-text">DevStream <span class="logo-highlight">Focus</span></span>
       </div>
       <div class="status-indicator" id="statusIndicator">
         <span class="dot"></span>
@@ -31,41 +31,60 @@
       </div>
     </header>
 
-    <!-- Master Switch Card -->
-    <div class="card master-switch-card">
-      <div class="switch-info">
-        <span class="switch-title">DevMode Filter</span>
-        <span class="switch-description">Restrict YouTube feed to programming</span>
-      </div>
-      <label class="switch">
-        <input type="checkbox" id="masterToggle">
-        <span class="slider"></span>
-      </label>
+    <!-- Navigation Modes Segmented Bar -->
+    <div class="segmented-control">
+      <button class="mode-tab active" data-mode="normal" title="Standard YouTube Feed">
+        <span class="tab-emoji">🏠</span>
+        <span class="tab-text">Normal</span>
+      </button>
+      <button class="mode-tab" data-mode="programming" title="Programming Feed">
+        <span class="tab-emoji">👨‍💻</span>
+        <span class="tab-text">Code</span>
+      </button>
+      <button class="mode-tab" data-mode="productivity" title="Productivity & Focus">
+        <span class="tab-emoji">🎯</span>
+        <span class="tab-text">Focus</span>
+      </button>
+      <button class="mode-tab" data-mode="tech" title="Tech Trends & Reviews">
+        <span class="tab-emoji">⚡</span>
+        <span class="tab-text">Tech</span>
+      </button>
+      <button class="mode-tab" data-mode="gaming" title="Gaming Feed">
+        <span class="tab-emoji">🎮</span>
+        <span class="tab-text">Play</span>
+      </button>
     </div>
 
-    <!-- Quick Stats Card -->
-    <div class="card stats-card">
-      <div class="stat-item">
-        <span class="stat-value" id="statsCount">0</span>
-        <span class="stat-label">Videos Filtered</span>
+    <!-- Active Mode Summary Card -->
+    <div class="card status-card">
+      <div class="mode-summary">
+        <span class="current-mode-title" id="currentModeTitle">Standard YouTube</span>
+        <span class="current-mode-desc" id="currentModeDesc">Default recommendations are active. Choose a tab above to customize your feed.</span>
       </div>
-      <div class="stat-decorator">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </div>
+
+    <!-- Normal Mode Placeholder Info (Shown only when in Normal mode) -->
+    <div class="card normal-info-card" id="normalInfoCard">
+      <div class="info-content">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" class="info-icon">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
         </svg>
+        <p>You are viewing your standard feed. Select a focus mode above to filter out noise and direct recommendations to a specific topic.</p>
       </div>
     </div>
 
-    <!-- Keywords Section -->
-    <div class="card keywords-card">
+    <!-- Keywords Section (Hidden in Normal mode) -->
+    <div class="card keywords-card hidden" id="keywordsCard">
       <div class="section-title">
-        <span>Target Technologies</span>
+        <span>Technology Keywords</span>
         <button class="text-btn" id="resetBtn" title="Reset to default keywords">Reset Defaults</button>
       </div>
       
       <!-- Keyword Add form -->
       <form class="add-keyword-form" id="addKeywordForm">
-        <input type="text" id="newKeywordInput" placeholder="Add keyword (e.g. Docker, Rust)..." required>
+        <input type="text" id="newKeywordInput" placeholder="Add custom topic keyword..." required>
         <button type="submit" class="add-btn">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -80,10 +99,23 @@
       </div>
     </div>
 
+    <!-- Quick Stats Card (Hidden in Normal mode) -->
+    <div class="card stats-card hidden" id="statsCard">
+      <div class="stat-item">
+        <span class="stat-value" id="statsCount">0</span>
+        <span class="stat-label">Videos Filtered (All-time)</span>
+      </div>
+      <div class="stat-decorator">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+    </div>
+
     <!-- Footer -->
     <footer class="app-footer">
       <span>Focus & Optimize your learning</span>
-      <span>v1.0.0</span>
+      <span>v2.0.0</span>
     </footer>
   </div>
   <script src="popup.js"></script>
