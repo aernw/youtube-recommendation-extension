@@ -1244,16 +1244,39 @@ function updateHeaderToggleUI() {
   }
 }
 
+// Clean any third-party ads injected directly into our custom grid DOM
+function cleanCustomGridAds() {
+  const grid = document.getElementById('yfc-feed-grid');
+  if (!grid) return;
+  
+  const children = Array.from(grid.children);
+  children.forEach(child => {
+    if (!child.classList.contains('dev-video-card') && 
+        !child.classList.contains('dev-spinner') && 
+        !child.classList.contains('dev-empty-msg')) {
+      logDebug(`REMOVED INJECTED AD FROM GRID: <${child.tagName.toLowerCase()}>`, false);
+      child.remove();
+    }
+  });
+}
+
 // Run the ad skipper once immediately on script load
-if (activeMode !== 'normal' && window.location.pathname.includes('/watch')) {
-  skipPlayerVideoAds();
+if (activeMode !== 'normal') {
+  if (window.location.pathname.includes('/watch')) {
+    skipPlayerVideoAds();
+  }
   hideDisplayAds();
 }
 
-// Fast checker (every 100ms) for skipping video player ads instantly when viewing a video
+// Fast checker (every 100ms) for skipping video player ads and cleaning grid ads instantly
 setInterval(() => {
-  if (activeMode !== 'normal' && window.location.pathname.includes('/watch')) {
-    skipPlayerVideoAds();
+  if (activeMode !== 'normal') {
+    if (window.location.pathname.includes('/watch')) {
+      skipPlayerVideoAds();
+    }
     hideDisplayAds();
+    if (window.location.pathname === '/') {
+      cleanCustomGridAds();
+    }
   }
 }, 100);
