@@ -110,24 +110,24 @@ body {
   color: var(--danger);
 }
 
-/* Segmented Tabs Control */
+/* Segmented Tabs Control - Wrapping layout for 9 categories */
 .segmented-control {
   display: flex;
+  flex-wrap: wrap;
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 4px;
-  gap: 2px;
-  justify-content: space-between;
+  padding: 6px;
+  gap: 4px;
 }
 
 .mode-tab {
-  flex: 1;
+  flex: 1 1 calc(33.33% - 4px); /* 3 items per row */
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 8px 4px;
+  gap: 6px;
+  padding: 6px 4px;
   background: none;
   border: none;
   border-radius: var(--radius-md);
@@ -135,6 +135,7 @@ body {
   color: var(--text-muted);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
+  border: 1px solid transparent;
 }
 
 .mode-tab:hover {
@@ -150,13 +151,12 @@ body {
 }
 
 .tab-emoji {
-  font-size: 16px;
-  margin-bottom: 2px;
+  font-size: 13px;
   transition: transform 0.2s ease;
 }
 
 .mode-tab:hover .tab-emoji {
-  transform: scale(1.15) translateY(-1px);
+  transform: scale(1.2);
 }
 
 .tab-text {

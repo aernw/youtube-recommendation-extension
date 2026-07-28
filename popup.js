@@ -48,6 +48,39 @@ const defaultKeywords = {
     // French
     'jeux vidéo', 'jeu video', 'gameplay fr', 'découverte jeu', 'let\'s play', 'lets play', 
     'squeezie gaming', 'gotaga', 'kameto', 'joueur du grenier'
+  ],
+  design: [
+    'ui design', 'ux design', 'figma tutorial', 'graphic design', 'web design', 'typography', 
+    'color theory', 'layout design', 'portfolio review', 'product design', 'interaction design', 
+    'wireframing', 'prototyping', 'adobe illustrator', 'photoshop tutorial', 'motion design', 
+    'user research', 'information architecture', 'landing page design', 'blender tutorial', 
+    '3d design', 'poster design',
+    // French
+    'design graphique', 'conception ui', 'tutoriel figma', 'webdesign', 'maquette figma'
+  ],
+  business: [
+    'startup', 'saas building', 'indie hacker', 'business model', 'marketing strategy', 
+    'venture capital', 'product management', 'entrepreneurship', 'side hustle', 'passive income', 
+    'investing tips', 'stocks analysis', 'dropshipping', 'copywriting', 'pitch deck', 
+    'founder advice', 'micro-saas', 'solopreneur', 'e-commerce', 'sales funnel',
+    // French
+    'entrepreneuriat', 'créer sa boîte', 'modèle entreprise', 'marketing numérique', 'investir'
+  ],
+  science: [
+    'science', 'physics tutorial', 'space exploration', 'astrophysics', 'quantum mechanics', 
+    'math tutorials', 'chemistry experiments', 'biology lessons', 'history documentary', 
+    'philosophy concepts', 'engineering wonders', 'nature documentary', 'kurzgesagt', 
+    'veritasium', 'vsauce', 'neil degrass tyson', '3blue1brown', 'destin sandlin', 
+    'computer science theory', 'evolution theory', 'universe documentary',
+    // French
+    'vulgarisation scientifique', 'physique quantique', 'astronomie', 'documentaire science'
+  ],
+  music: [
+    'lo-fi beats', 'lofi study', 'ambient music', 'synthwave mix', 'instrumental beats', 
+    'piano chill', 'music for concentration', 'focus music', 'chillhop', 'relaxing beats', 
+    'post rock', 'studying playlist', 'lofi hip hop', 'deep focus sounds', 'classical music study',
+    // French
+    'musique lofi', 'musique pour étudier', 'ambiance détente', 'piano relaxant'
   ]
 };
 
@@ -72,6 +105,22 @@ const modeDetails = {
   gaming: {
     title: "🎮 Gaming Feed Active",
     desc: "Seeds your homepage with gameplay walkthroughs, highlights, and game reviews."
+  },
+  design: {
+    title: "🎨 Design & UX Feed Active",
+    desc: "Feeds your homepage with graphic design tips, Figma workflows, UI/UX tutorials, and portfolio reviews."
+  },
+  business: {
+    title: "💼 Business & SaaS Feed Active",
+    desc: "Feeds your homepage with SaaS founder stories, startups, indie hacking, marketing, and finance."
+  },
+  science: {
+    title: "🔬 Science & Learn Feed Active",
+    desc: "Feeds your homepage with documentaries, physics, math, space exploration, and general learning."
+  },
+  music: {
+    title: "🎵 Music & Chill Feed Active",
+    desc: "Feeds your homepage with chill instrumentals, lo-fi beats, ambient sounds, and study playlists."
   }
 };
 

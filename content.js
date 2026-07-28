@@ -55,6 +55,39 @@ const defaultKeywords = {
     // French
     'jeux vidéo', 'jeu video', 'gameplay fr', 'découverte jeu', 'let\'s play', 'lets play', 
     'squeezie gaming', 'gotaga', 'kameto', 'joueur du grenier'
+  ],
+  design: [
+    'ui design', 'ux design', 'figma tutorial', 'graphic design', 'web design', 'typography', 
+    'color theory', 'layout design', 'portfolio review', 'product design', 'interaction design', 
+    'wireframing', 'prototyping', 'adobe illustrator', 'photoshop tutorial', 'motion design', 
+    'user research', 'information architecture', 'landing page design', 'blender tutorial', 
+    '3d design', 'poster design',
+    // French
+    'design graphique', 'conception ui', 'tutoriel figma', 'webdesign', 'maquette figma'
+  ],
+  business: [
+    'startup', 'saas building', 'indie hacker', 'business model', 'marketing strategy', 
+    'venture capital', 'product management', 'entrepreneurship', 'side hustle', 'passive income', 
+    'investing tips', 'stocks analysis', 'dropshipping', 'copywriting', 'pitch deck', 
+    'founder advice', 'micro-saas', 'solopreneur', 'e-commerce', 'sales funnel',
+    // French
+    'entrepreneuriat', 'créer sa boîte', 'modèle entreprise', 'marketing numérique', 'investir'
+  ],
+  science: [
+    'science', 'physics tutorial', 'space exploration', 'astrophysics', 'quantum mechanics', 
+    'math tutorials', 'chemistry experiments', 'biology lessons', 'history documentary', 
+    'philosophy concepts', 'engineering wonders', 'nature documentary', 'kurzgesagt', 
+    'veritasium', 'vsauce', 'neil degrass tyson', '3blue1brown', 'destin sandlin', 
+    'computer science theory', 'evolution theory', 'universe documentary',
+    // French
+    'vulgarisation scientifique', 'physique quantique', 'astronomie', 'documentaire science'
+  ],
+  music: [
+    'lo-fi beats', 'lofi study', 'ambient music', 'synthwave mix', 'instrumental beats', 
+    'piano chill', 'music for concentration', 'focus music', 'chillhop', 'relaxing beats', 
+    'post rock', 'studying playlist', 'lofi hip hop', 'deep focus sounds', 'classical music study',
+    // French
+    'musique lofi', 'musique pour étudier', 'ambiance détente', 'piano relaxant'
   ]
 };
 
@@ -85,20 +118,9 @@ chrome.storage.local.get(['activeMode', 'totalFilteredCount'], (result) => {
 // Listen for updates from popup or other parts of the extension
 chrome.storage.onChanged.addListener((changes) => {
   if (changes.activeMode !== undefined) {
-    activeMode = changes.activeMode.newValue;
-    
-    const storageKey = `keywords_${activeMode}`;
-    chrome.storage.local.get([storageKey], (res) => {
-      whitelistKeywords = res[storageKey] || defaultKeywords[activeMode] || [];
-      
-      if (activeMode !== 'normal') {
-        handleRouteChange();
-      } else {
-        disableFilter();
-        teardownHomepageGrid();
-      }
-      updateHeaderToggleUI();
-    });
+    // 2. Automatically reload the page when switching focus mode streams
+    window.location.reload();
+    return;
   }
   
   // Listen for changes in keywords for the current active mode
@@ -509,6 +531,62 @@ function getTargetedQuery(keyword) {
       'lets play walkthrough'
     ];
     if (kw.includes('gameplay') || kw.includes('review') || kw.includes('playthrough')) {
+      return keyword;
+    }
+    const modifier = searchModifiers[Math.floor(Math.random() * searchModifiers.length)];
+    return `${keyword} ${modifier}`;
+  }
+  
+  if (activeMode === 'design') {
+    const searchModifiers = [
+      'workflow design figma',
+      'ui ux layout tips',
+      'portfolio review graphics',
+      'web app design guidelines'
+    ];
+    if (kw.includes('design') || kw.includes('ui') || kw.includes('ux') || kw.includes('figma')) {
+      return keyword;
+    }
+    const modifier = searchModifiers[Math.floor(Math.random() * searchModifiers.length)];
+    return `${keyword} ${modifier}`;
+  }
+  
+  if (activeMode === 'business') {
+    const searchModifiers = [
+      'startup marketing strategy',
+      'saas indie hacker sales',
+      'business model ideas founder',
+      'finance trends entrepreneur'
+    ];
+    if (kw.includes('startup') || kw.includes('business') || kw.includes('saas') || kw.includes('founder')) {
+      return keyword;
+    }
+    const modifier = searchModifiers[Math.floor(Math.random() * searchModifiers.length)];
+    return `${keyword} ${modifier}`;
+  }
+  
+  if (activeMode === 'science') {
+    const searchModifiers = [
+      'documentary cosmic learn',
+      'physics quantum math wonders',
+      'scientific theory breakthrough',
+      'education concept crash course'
+    ];
+    if (kw.includes('science') || kw.includes('physics') || kw.includes('documentary') || kw.includes('theory')) {
+      return keyword;
+    }
+    const modifier = searchModifiers[Math.floor(Math.random() * searchModifiers.length)];
+    return `${keyword} ${modifier}`;
+  }
+  
+  if (activeMode === 'music') {
+    const searchModifiers = [
+      'chill study lo-fi beats',
+      'ambient synthwave focus music',
+      'relaxing instrumentals piano mix',
+      'studying playlist concentration'
+    ];
+    if (kw.includes('lofi') || kw.includes('ambient') || kw.includes('music') || kw.includes('chill')) {
       return keyword;
     }
     const modifier = searchModifiers[Math.floor(Math.random() * searchModifiers.length)];
@@ -973,6 +1051,10 @@ function injectToggleHeader() {
       <option value="productivity" ${activeMode === 'productivity' ? 'selected' : ''}>🎯 Productivity</option>
       <option value="tech" ${activeMode === 'tech' ? 'selected' : ''}>⚡ Tech & Apps</option>
       <option value="gaming" ${activeMode === 'gaming' ? 'selected' : ''}>🎮 Gaming Feed</option>
+      <option value="design" ${activeMode === 'design' ? 'selected' : ''}>🎨 Design & UX</option>
+      <option value="business" ${activeMode === 'business' ? 'selected' : ''}>💼 Business & SaaS</option>
+      <option value="science" ${activeMode === 'science' ? 'selected' : ''}>🔬 Science & Learn</option>
+      <option value="music" ${activeMode === 'music' ? 'selected' : ''}>🎵 Music & Chill</option>
     </select>
   `;
   
