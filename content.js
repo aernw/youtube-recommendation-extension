@@ -1,6 +1,6 @@
 // YouTube Feed Controller (YFC) Content Script
 
-let activeMode = 'normal';
+let activeMode = localStorage.getItem('yfc_active_mode') || 'normal';
 let whitelistKeywords = [];
 let totalFilteredCount = 0;
 let autoScrollTimer = null;
@@ -110,6 +110,7 @@ function logDebug(message, isAllowed) {
 // Initialize settings from storage
 chrome.storage.local.get(['activeMode', 'totalFilteredCount'], (result) => {
   activeMode = result.activeMode || 'normal';
+  localStorage.setItem('yfc_active_mode', activeMode); // Sync cache
   totalFilteredCount = result.totalFilteredCount || 0;
   
   const storageKey = `keywords_${activeMode}`;
@@ -128,6 +129,7 @@ chrome.storage.local.get(['activeMode', 'totalFilteredCount'], (result) => {
 // Listen for updates from popup or other parts of the extension
 chrome.storage.onChanged.addListener((changes) => {
   if (changes.activeMode !== undefined) {
+    localStorage.setItem('yfc_active_mode', changes.activeMode.newValue);
     // 2. Automatically reload the page when switching focus mode streams
     window.location.reload();
     return;
@@ -1242,10 +1244,16 @@ function updateHeaderToggleUI() {
   }
 }
 
-// Fast checker (every 200ms) for skipping video player ads instantly when viewing a video
+// Run the ad skipper once immediately on script load
+if (activeMode !== 'normal' && window.location.pathname.includes('/watch')) {
+  skipPlayerVideoAds();
+  hideDisplayAds();
+}
+
+// Fast checker (every 100ms) for skipping video player ads instantly when viewing a video
 setInterval(() => {
   if (activeMode !== 'normal' && window.location.pathname.includes('/watch')) {
     skipPlayerVideoAds();
     hideDisplayAds();
   }
-}, 200);
+}, 100);
