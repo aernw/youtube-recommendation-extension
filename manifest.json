@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "FocusStream: YouTube Feed Controller",
+  "name": "YouTube Feed Controller (YFC)",
   "version": "1.0.0",
   "description": "Filters and re-seeds your YouTube homepage based on your active focus mode: Programming, Productivity, Tech, or Gaming.",
   "permissions": [

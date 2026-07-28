@@ -1,4 +1,4 @@
-// YouTube FocusStream Multi-Mode Filter & Recommendation Injector Content Script
+// YouTube Feed Controller (YFC) Content Script
 
 let activeMode = 'normal';
 let whitelistKeywords = [];
@@ -61,7 +61,7 @@ const defaultKeywords = {
 // Console debug log helper
 function logDebug(message, isAllowed) {
   const color = isAllowed ? '#10b981' : '#ef4444';
-  console.log(`%c[FocusStream] ${message}`, `color: ${color}; font-weight: 500;`);
+  console.log(`%c[YFC] ${message}`, `color: ${color}; font-weight: 500;`);
 }
 
 // Initialize settings from storage
@@ -132,9 +132,9 @@ const SHELF_SELECTORS = [
 
 // Injected styling for custom recommendation feed and mode-select dropdown
 function injectStyles() {
-  if (document.getElementById('focusstream-injected-styles')) return;
+  if (document.getElementById('yfc-injected-styles')) return;
   const style = document.createElement('style');
-  style.id = 'focusstream-injected-styles';
+  style.id = 'yfc-injected-styles';
   style.textContent = `
     /* Toggle select dropdown styling in YouTube Header */
     #yt-programming-filter-toggle-container {
@@ -146,7 +146,7 @@ function injectStyles() {
       font-family: Roboto, Arial, sans-serif;
       user-select: none;
     }
-    #yt-focusstream-mode-select {
+    #yt-yfc-mode-select {
       background-color: var(--yt-spec-badge-chip-background, #2c2c2c);
       color: var(--yt-spec-text-primary, #fff);
       border: 1px solid var(--yt-spec-10-percent-layer, rgba(255,255,255,0.1));
@@ -159,18 +159,18 @@ function injectStyles() {
       outline: none;
       transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
     }
-    #yt-focusstream-mode-select:hover {
+    #yt-yfc-mode-select:hover {
       background-color: var(--yt-spec-button-chip-background-hover, #3e3e3e);
       border-color: #00c6ff;
       box-shadow: 0 0 6px rgba(0, 198, 255, 0.3);
     }
-    #yt-focusstream-mode-select option {
+    #yt-yfc-mode-select option {
       background-color: #1f1f1f;
       color: #fff;
     }
 
     /* Custom Recommendation Grid styles */
-    #focusstream-feed-grid {
+    #yfc-feed-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 40px 16px;
@@ -350,10 +350,10 @@ async function setupHomepageGrid(forceRefresh = false) {
   
   originalGrid.style.display = 'none';
   
-  let customGrid = document.getElementById('focusstream-feed-grid');
+  let customGrid = document.getElementById('yfc-feed-grid');
   if (!customGrid) {
     customGrid = document.createElement('div');
-    customGrid.id = 'focusstream-feed-grid';
+    customGrid.id = 'yfc-feed-grid';
     originalGrid.parentNode.insertBefore(customGrid, originalGrid.nextSibling);
   }
   
@@ -376,7 +376,7 @@ function teardownHomepageGrid() {
     originalGrid.style.display = '';
   }
   
-  const customGrid = document.getElementById('focusstream-feed-grid');
+  const customGrid = document.getElementById('yfc-feed-grid');
   if (customGrid) {
     customGrid.remove();
   }
@@ -414,7 +414,7 @@ async function loadMoreRecommendations() {
   if (isScrolling) return;
   isScrolling = true;
   
-  const customGrid = document.getElementById('focusstream-feed-grid');
+  const customGrid = document.getElementById('yfc-feed-grid');
   if (!customGrid) return;
   
   const bottomSpinner = document.createElement('div');
@@ -444,7 +444,7 @@ async function loadMoreRecommendations() {
 function handleInfiniteScroll() {
   if (activeMode === 'normal' || isScrolling) return;
   
-  const customGrid = document.getElementById('focusstream-feed-grid');
+  const customGrid = document.getElementById('yfc-feed-grid');
   if (!customGrid) return;
   
   const rect = customGrid.getBoundingClientRect();
@@ -532,7 +532,7 @@ async function fetchVideosForKeyword(keyword) {
     const renderers = findVideoRenderers(ytInitialData);
     return renderers.map(extractVideoData).filter(v => v !== null);
   } catch (err) {
-    console.error(`FocusStream failed to fetch results for ${keyword}:`, err);
+    console.error(`YFC failed to fetch results for ${keyword}:`, err);
     return [];
   }
 }
@@ -639,7 +639,7 @@ function extractVideoData(renderer) {
 
 // Render video card elements inside custom grid
 function renderVideoCards(videos) {
-  const grid = document.getElementById('focusstream-feed-grid');
+  const grid = document.getElementById('yfc-feed-grid');
   if (!grid) return;
   
   videos.forEach(v => {
@@ -783,11 +783,11 @@ function calculateRecencyMultiplier(timeStr) {
 
 // Loader UI feedback
 function showLoadingSpinner() {
-  const grid = document.getElementById('focusstream-feed-grid');
+  const grid = document.getElementById('yfc-feed-grid');
   if (!grid) return;
   
   const spinner = document.createElement('div');
-  spinner.id = 'focusstream-spinner';
+  spinner.id = 'yfc-spinner';
   spinner.className = 'dev-spinner';
   spinner.innerHTML = `
     <div class="dev-spinner-circle"></div>
@@ -797,13 +797,13 @@ function showLoadingSpinner() {
 }
 
 function hideLoadingSpinner() {
-  const spinner = document.getElementById('focusstream-spinner');
+  const spinner = document.getElementById('yfc-spinner');
   if (spinner) spinner.remove();
 }
 
 // Display empty feedback
 function showEmptyMessage(msgText) {
-  const grid = document.getElementById('focusstream-feed-grid');
+  const grid = document.getElementById('yfc-feed-grid');
   if (!grid) return;
   
   const msg = document.createElement('div');
@@ -967,7 +967,7 @@ function injectToggleHeader() {
   toggleContainer.id = 'yt-programming-filter-toggle-container';
   
   toggleContainer.innerHTML = `
-    <select id="yt-focusstream-mode-select">
+    <select id="yt-yfc-mode-select">
       <option value="normal" ${activeMode === 'normal' ? 'selected' : ''}>Standard Feed</option>
       <option value="programming" ${activeMode === 'programming' ? 'selected' : ''}>👨‍💻 Programming</option>
       <option value="productivity" ${activeMode === 'productivity' ? 'selected' : ''}>🎯 Productivity</option>
@@ -978,7 +978,7 @@ function injectToggleHeader() {
   
   targetHeader.insertBefore(toggleContainer, targetHeader.firstChild);
   
-  const select = document.getElementById('yt-focusstream-mode-select');
+  const select = document.getElementById('yt-yfc-mode-select');
   select.addEventListener('change', (e) => {
     const mode = e.target.value;
     chrome.storage.local.set({ activeMode: mode });
@@ -986,7 +986,7 @@ function injectToggleHeader() {
 }
 
 function updateHeaderToggleUI() {
-  const select = document.getElementById('yt-focusstream-mode-select');
+  const select = document.getElementById('yt-yfc-mode-select');
   if (select) {
     select.value = activeMode;
   }

@@ -1,4 +1,4 @@
-// YouTube FocusStream Multi-Mode Control Panel controller
+// YouTube Feed Controller (YFC) Control Panel controller
 
 // Default keywords for all focus modes
 const defaultKeywords = {
