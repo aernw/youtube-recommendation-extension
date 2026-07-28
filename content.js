@@ -1011,6 +1011,66 @@ function matchesKeywords(text, keywords) {
   });
 }
 
+// Selectors for banner, sidebar and video frame ads
+const AD_SELECTORS = [
+  'ytd-companion-ad-renderer',
+  'ytd-display-ad-renderer',
+  'ytd-promoted-sparkles-web-renderer',
+  'ytd-promoted-video-renderer',
+  'ytd-player-legacy-advertisment-renderer',
+  'ytd-action-companion-ad-renderer',
+  '#player-ads',
+  '#masthead-ad',
+  'ytd-ad-slot-renderer',
+  'ytd-brand-video-singleton-renderer'
+];
+
+// Helper to identify promoted ad cards using innerText
+function hasAdText(text) {
+  const t = text.toLowerCase();
+  const adIndicators = ['annonce', 'sponsored', 'sponsorisé', 'promoted', 'sponsorise'];
+  if (adIndicators.some(ind => t.includes(ind))) return true;
+  
+  const words = t.split(/\s+/);
+  return words.includes('ad');
+}
+
+// Skip video pre-roll/mid-roll player ads instantly
+function skipPlayerVideoAds() {
+  const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
+  if (!player) return;
+  
+  const isAdShowing = player.classList.contains('ad-showing') || player.classList.contains('ad-interrupting');
+  const video = player.querySelector('video');
+  
+  if (isAdShowing && video) {
+    if (!video.muted) {
+      video.muted = true;
+    }
+    if (video.playbackRate !== 16) {
+      video.playbackRate = 16;
+    }
+    if (video.duration && !isNaN(video.duration) && video.currentTime < video.duration - 0.2) {
+      video.currentTime = video.duration - 0.1;
+    }
+  }
+  
+  const skipBtn = document.querySelector('.ytp-ad-skip-button, .ytp-ad-skip-button-modern, .ytp-ad-skip-button-slot');
+  if (skipBtn) {
+    skipBtn.click();
+  }
+}
+
+// Hide banner and sidebar ads on watch/results pages
+function hideDisplayAds() {
+  const ads = document.querySelectorAll(AD_SELECTORS.join(','));
+  ads.forEach(ad => {
+    if (ad.style.display !== 'none') {
+      ad.style.display = 'none';
+    }
+  });
+}
+
 // Function to filter a single video item using innerText to penetrate Shadow DOM
 function filterVideoItem(item) {
   if (activeMode === 'normal') return;
@@ -1018,6 +1078,14 @@ function filterVideoItem(item) {
   
   const cardText = (item.innerText || item.textContent || '').trim();
   if (cardText.length < 10) return;
+  
+  // Exclude promoted video cards (ads) in recommendations list
+  if (hasAdText(cardText)) {
+    item.setAttribute('data-filtered', 'blocked');
+    item.style.display = 'none';
+    logDebug(`BLOCKED PROMOTED RECOMMENDATION CARD: "${cardText.substring(0, 50)}..."`, false);
+    return;
+  }
   
   const isMatch = matchesKeywords(cardText, whitelistKeywords);
   const displaySnippet = cardText.replace(/\s+/g, ' ').substring(0, 60);
@@ -1055,6 +1123,11 @@ function filterShelfItem(shelf) {
 // Scans the DOM and applies the filter to all video cards
 function applyFilter() {
   if (activeMode === 'normal') return;
+  
+  // Hide display ads and skip player ads whenever active
+  hideDisplayAds();
+  skipPlayerVideoAds();
+  
   if (window.location.pathname === '/') return;
   
   const videoElements = document.querySelectorAll(VIDEO_SELECTORS.join(','));
@@ -1168,3 +1241,11 @@ function updateHeaderToggleUI() {
     select.value = activeMode;
   }
 }
+
+// Fast checker (every 200ms) for skipping video player ads instantly when viewing a video
+setInterval(() => {
+  if (activeMode !== 'normal' && window.location.pathname.includes('/watch')) {
+    skipPlayerVideoAds();
+    hideDisplayAds();
+  }
+}, 200);
