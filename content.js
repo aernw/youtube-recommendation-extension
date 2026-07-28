@@ -413,22 +413,43 @@ function teardownHomepageGrid() {
 async function loadInitialRecommendations() {
   showLoadingSpinner();
   
-  // Seed with 8 keywords to fully populate the homepage
-  const keywordsToFetch = getKeywordsToFetch(8);
-  const promises = keywordsToFetch.map(kw => fetchVideosForKeyword(kw));
-  const results = await Promise.all(promises);
-  
-  let videos = results.flat().filter(v => v !== null);
-  videos = scoreAndRankVideos(videos);
-  
-  hideLoadingSpinner();
-  
-  if (videos.length === 0) {
-    showEmptyMessage("Could not fetch recommendation content. Please check your internet connection.");
-    return;
+  try {
+    const keywordsToFetch = getKeywordsToFetch(8);
+    const promises = keywordsToFetch.map(kw => fetchVideosForKeyword(kw));
+    const results = await Promise.all(promises);
+    
+    let videos = [];
+    let diagnostics = [];
+    
+    results.forEach((res, i) => {
+      const kw = keywordsToFetch[i];
+      if (Array.isArray(res)) {
+        videos.push(...res);
+        diagnostics.push(`${kw}: Found ${res.length} videos`);
+      } else if (res && res.error) {
+        diagnostics.push(`${kw}: Error - ${res.error}`);
+      } else {
+        diagnostics.push(`${kw}: Unknown response`);
+      }
+    });
+    
+    videos = scoreAndRankVideos(videos);
+    hideLoadingSpinner();
+    
+    if (videos.length === 0) {
+      const diagnosticMsg = `Could not fetch recommendation content.\n\n` +
+                            `Active Mode: ${activeMode}\n` +
+                            `Keywords used: ${keywordsToFetch.join(', ')}\n\n` +
+                            `Diagnostics:\n${diagnostics.join('\n')}`;
+      showEmptyMessage(diagnosticMsg);
+      return;
+    }
+    
+    renderVideoCards(videos);
+  } catch (err) {
+    hideLoadingSpinner();
+    showEmptyMessage(`Internal Error: ${err.message}\n${err.stack}`);
   }
-  
-  renderVideoCards(videos);
 }
 
 // Load more recommendations on scroll
@@ -602,22 +623,27 @@ async function fetchVideosForKeyword(keyword) {
   try {
     logDebug(`Fetching fresh recommendations for [${activeMode}]: "${query}"...`, true);
     const response = await fetch(`/results?search_query=${encodeURIComponent(query)}`);
+    if (!response.ok) {
+      return { error: `HTTP ${response.status} ${response.statusText}` };
+    }
     const html = await response.text();
     
     const ytInitialData = parseYtInitialData(html);
-    if (!ytInitialData) return [];
+    if (!ytInitialData) {
+      return { error: `Could not parse ytInitialData (HTML length: ${html.length})` };
+    }
     
     const renderers = findVideoRenderers(ytInitialData);
     return renderers.map(extractVideoData).filter(v => v !== null);
   } catch (err) {
     console.error(`YFC failed to fetch results for ${keyword}:`, err);
-    return [];
+    return { error: err.message || err.toString() };
   }
 }
 
-// Extract essential items from ytInitialData payload
+// Extract essential items from ytInitialData payload with more robust matching
 function parseYtInitialData(html) {
-  const match = html.match(/ytInitialData\s*=\s*({.*?});/s);
+  const match = html.match(/ytInitialData\s*=\s*({.*?})(?:;|<\/script>)/s) || html.match(/ytInitialData\s*=\s*({.*?})/s);
   if (!match) return null;
   try {
     return JSON.parse(match[1]);
