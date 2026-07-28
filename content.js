@@ -677,19 +677,43 @@ function parseYtInitialData(html) {
 }
 
 // Recursively parse JSON structure to extract video renderers
+// Helper to check if a videoRenderer is a promoted ad
+function isPromotedAd(renderer) {
+  if (renderer.badges) {
+    const hasAdBadge = renderer.badges.some(b => {
+      const badge = b.metadataBadgeRenderer;
+      if (!badge) return false;
+      
+      const style = badge.style || '';
+      const label = (badge.label || '').toLowerCase();
+      
+      return style.includes('AD') || label.includes('ad') || label.includes('annonce') || label.includes('sponsor');
+    });
+    if (hasAdBadge) return true;
+  }
+  return false;
+}
+
+// Recursively parse JSON structure to extract video renderers
 function findVideoRenderers(obj) {
   const renderers = [];
+  const adKeys = ['adSlotRenderer', 'promotedSparklesWebRenderer', 'adPlacementRenderer', 'adPlacement', 'adRenderer'];
   
   function traverse(item) {
     if (!item || typeof item !== 'object') return;
     
     if (item.videoRenderer) {
-      renderers.push(item.videoRenderer);
+      if (!isPromotedAd(item.videoRenderer)) {
+        renderers.push(item.videoRenderer);
+      }
       return;
     }
     
     for (const key in item) {
       if (item.hasOwnProperty(key)) {
+        if (adKeys.includes(key)) {
+          continue; // Skip traversing promoted ad blocks
+        }
         traverse(item[key]);
       }
     }
