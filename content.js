@@ -206,11 +206,12 @@ function injectStyles() {
     /* Custom Recommendation Grid styles */
     #yfc-feed-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
       gap: 40px 16px;
-      padding: 24px 0;
-      max-width: 1280px;
-      margin: var(--ytd-masthead-height, 56px) auto 0 auto; /* Push grid down past fixed header */
+      padding: 24px 24px 48px 24px;
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: var(--ytd-masthead-height, 56px); /* Push grid down past fixed header */
       background-color: var(--yt-spec-general-background-a, #0f0f0f);
     }
     .dev-video-card {
@@ -234,10 +235,10 @@ function injectStyles() {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: opacity 0.15s ease;
     }
     .dev-video-card:hover .dev-thumb-img {
-      transform: scale(1.03);
+      opacity: 0.9;
     }
     .dev-duration {
       position: absolute;
@@ -292,26 +293,29 @@ function injectStyles() {
       min-width: 0;
     }
     .dev-title {
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 500;
-      line-height: 1.4;
+      line-height: 22px;
       color: var(--yt-spec-text-primary, #fff);
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
       text-overflow: ellipsis;
+      margin-bottom: 4px;
     }
     .dev-channel-name {
-      font-size: 12px;
+      font-size: 14px;
       color: var(--yt-spec-text-secondary, #aaa);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      margin-bottom: 2px;
     }
     .dev-meta-line {
-      font-size: 12px;
+      font-size: 14px;
       color: var(--yt-spec-text-secondary, #aaa);
+      line-height: 18px;
     }
     .dev-spinner {
       display: flex;
