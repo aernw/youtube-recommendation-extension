@@ -176,7 +176,7 @@ function injectStyles() {
       gap: 40px 16px;
       padding: 24px 0;
       max-width: 1280px;
-      margin: 0 auto;
+      margin: var(--ytd-masthead-height, 56px) auto 0 auto; /* Push grid down past fixed header */
       background-color: var(--yt-spec-general-background-a, #0f0f0f);
     }
     .dev-video-card {
