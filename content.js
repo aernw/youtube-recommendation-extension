@@ -430,9 +430,16 @@ async function loadInitialRecommendations() {
   showLoadingSpinner();
   
   try {
-    const keywordsToFetch = getKeywordsToFetch(8);
-    const promises = keywordsToFetch.map(kw => fetchVideosForKeyword(kw));
-    const results = await Promise.all(promises);
+    // Seed with 4 keywords initially (plenty of videos to fill grid, much safer from rate-limits)
+    const keywordsToFetch = getKeywordsToFetch(4);
+    const results = [];
+    
+    // Fetch sequentially with a staggered delay to avoid bot detection
+    for (const kw of keywordsToFetch) {
+      const res = await fetchVideosForKeyword(kw);
+      results.push(res);
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
     
     let videos = [];
     let diagnostics = [];
@@ -487,10 +494,16 @@ async function loadMoreRecommendations() {
   customGrid.appendChild(bottomSpinner);
   
   try {
-    // Select another 4 keywords to fetch next batch
-    const keywordsToFetch = getKeywordsToFetch(4);
-    const promises = keywordsToFetch.map(kw => fetchVideosForKeyword(kw));
-    const results = await Promise.all(promises);
+    // Select another 3 keywords to fetch next batch
+    const keywordsToFetch = getKeywordsToFetch(3);
+    const results = [];
+    
+    // Fetch sequentially with a staggered delay to avoid bot detection
+    for (const kw of keywordsToFetch) {
+      const res = await fetchVideosForKeyword(kw);
+      results.push(res);
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
     
     let newVideos = results.flat().filter(v => v !== null && typeof v === 'object' && v.videoId);
     newVideos = scoreAndRankVideos(newVideos);
