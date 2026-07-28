@@ -211,7 +211,7 @@ function injectStyles() {
       padding: 24px 24px 48px 24px;
       width: 100%;
       box-sizing: border-box;
-      margin-top: var(--ytd-masthead-height, 56px); /* Push grid down past fixed header */
+      margin-top: calc(var(--ytd-masthead-height, 56px) + 24px); /* Clearance for header */
       background-color: var(--yt-spec-general-background-a, #0f0f0f);
     }
     .dev-video-card {
@@ -440,8 +440,9 @@ async function loadInitialRecommendations() {
     results.forEach((res, i) => {
       const kw = keywordsToFetch[i];
       if (Array.isArray(res)) {
-        videos.push(...res);
-        diagnostics.push(`${kw}: Found ${res.length} videos`);
+        const valid = res.filter(v => v && v.videoId);
+        videos.push(...valid);
+        diagnostics.push(`${kw}: Found ${valid.length} videos`);
       } else if (res && res.error) {
         diagnostics.push(`${kw}: Error - ${res.error}`);
       } else {
@@ -474,7 +475,10 @@ async function loadMoreRecommendations() {
   isScrolling = true;
   
   const customGrid = document.getElementById('yfc-feed-grid');
-  if (!customGrid) return;
+  if (!customGrid) {
+    isScrolling = false;
+    return;
+  }
   
   const bottomSpinner = document.createElement('div');
   bottomSpinner.className = 'dev-spinner';
@@ -482,21 +486,24 @@ async function loadMoreRecommendations() {
   bottomSpinner.innerHTML = `<div class="dev-spinner-circle"></div>`;
   customGrid.appendChild(bottomSpinner);
   
-  // Select another 4 keywords to fetch next batch
-  const keywordsToFetch = getKeywordsToFetch(4);
-  const promises = keywordsToFetch.map(kw => fetchVideosForKeyword(kw));
-  const results = await Promise.all(promises);
-  
-  let newVideos = results.flat().filter(v => v !== null);
-  newVideos = scoreAndRankVideos(newVideos);
-  
-  bottomSpinner.remove();
-  
-  if (newVideos.length > 0) {
-    renderVideoCards(newVideos);
+  try {
+    // Select another 4 keywords to fetch next batch
+    const keywordsToFetch = getKeywordsToFetch(4);
+    const promises = keywordsToFetch.map(kw => fetchVideosForKeyword(kw));
+    const results = await Promise.all(promises);
+    
+    let newVideos = results.flat().filter(v => v !== null && typeof v === 'object' && v.videoId);
+    newVideos = scoreAndRankVideos(newVideos);
+    
+    if (newVideos.length > 0) {
+      renderVideoCards(newVideos);
+    }
+  } catch (err) {
+    console.error("YFC: Failed to load more recommendations:", err);
+  } finally {
+    bottomSpinner.remove();
+    isScrolling = false;
   }
-  
-  isScrolling = false;
 }
 
 // Infinite scroll trigger
