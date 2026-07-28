@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Programming Filter",
+  "version": "1.0.0",
+  "description": "Filters YouTube feeds to keep only programming and software development content.",
+  "permissions": [
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.youtube.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_end"
+    }
+  ]
+}

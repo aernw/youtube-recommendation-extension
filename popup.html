@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube DevFilter Control Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <svg class="logo-icon" viewBox="0 0 24 24" width="22" height="22">
+          <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" fill="url(#grad1)"/>
+          <defs>
+            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#00c6ff;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#0072ff;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="logo-text">DevStream <span class="logo-highlight">Filter</span></span>
+      </div>
+      <div class="status-indicator" id="statusIndicator">
+        <span class="dot"></span>
+        <span class="status-label">Active</span>
+      </div>
+    </header>
+
+    <!-- Master Switch Card -->
+    <div class="card master-switch-card">
+      <div class="switch-info">
+        <span class="switch-title">DevMode Filter</span>
+        <span class="switch-description">Restrict YouTube feed to programming</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="masterToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <!-- Quick Stats Card -->
+    <div class="card stats-card">
+      <div class="stat-item">
+        <span class="stat-value" id="statsCount">0</span>
+        <span class="stat-label">Videos Filtered</span>
+      </div>
+      <div class="stat-decorator">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Keywords Section -->
+    <div class="card keywords-card">
+      <div class="section-title">
+        <span>Target Technologies</span>
+        <button class="text-btn" id="resetBtn" title="Reset to default keywords">Reset Defaults</button>
+      </div>
+      
+      <!-- Keyword Add form -->
+      <form class="add-keyword-form" id="addKeywordForm">
+        <input type="text" id="newKeywordInput" placeholder="Add keyword (e.g. Docker, Rust)..." required>
+        <button type="submit" class="add-btn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+      </form>
+
+      <!-- Keywords Grid list -->
+      <div class="keywords-container" id="keywordsContainer">
+        <!-- Keyword chips will be injected here -->
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <span>Focus & Optimize your learning</span>
+      <span>v1.0.0</span>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
