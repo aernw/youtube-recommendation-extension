@@ -690,6 +690,21 @@ function parseDurationToSeconds(durationStr) {
   return 0;
 }
 
+// Check if a video's publication age exceeds 3 years
+function isOlderThanThreeYears(timeStr) {
+  if (!timeStr) return false;
+  const str = timeStr.toLowerCase();
+  
+  if (str.includes('year') || str.includes('an')) {
+    const match = str.match(/(\d+)/);
+    if (match) {
+      const years = parseInt(match[1]);
+      return years > 3; // Block anything older than 3 years (e.g. 4 years, 5 years, etc.)
+    }
+  }
+  return false;
+}
+
 // Check if a video is a massive reference lecture course to filter them down
 function isMassiveCourse(title, durationSec) {
   const t = title.toLowerCase();
@@ -727,6 +742,11 @@ function extractVideoData(renderer) {
     
     // Exclude YouTube Shorts (videos shorter than 60 seconds)
     if (duration && durationSec < 60) {
+      return null;
+    }
+    
+    // Exclude videos older than 3 years
+    if (isOlderThanThreeYears(publishedTime)) {
       return null;
     }
     
