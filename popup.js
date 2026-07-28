@@ -1,4 +1,4 @@
-// YouTube DevStream Multi-Mode Control Panel controller
+// YouTube FocusStream Multi-Mode Control Panel controller
 
 // Default keywords for all focus modes
 const defaultKeywords = {
