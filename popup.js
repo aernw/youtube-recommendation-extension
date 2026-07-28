@@ -14,7 +14,9 @@ const defaultKeywords = [
   'vs code', 'vscode', 'neovim', 'vim', 'emacs', 'refactoring', 'clean code', 
   'design patterns', 'leetcoding', 'leetcode', 'hackerrank', 'codeforces', 'competitive programming', 
   'tech interview', 'system design', 'microservices', 'rest api', 'graphql', 'grpc', 
-  'webassembly', 'wasm', 'flexbox', 'tailwind', 'bootstrap'
+  'webassembly', 'wasm', 'flexbox', 'tailwind', 'bootstrap',
+  // French translations & terms
+  'programmation', 'développeur', 'developpeur', 'informatique', 'codeur', 'tutoriel', 'tuto'
 ];
 
 let currentKeywords = [];
